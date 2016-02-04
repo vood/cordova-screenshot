@@ -17,6 +17,10 @@ import android.util.Base64;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.os.Build;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -160,6 +164,7 @@ public class Screenshot extends CordovaPlugin {
             super.cordova.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    
                     if (mFormat.equals("png") || mFormat.equals("jpg")) {
                         Bitmap bitmap = getBitmap();
                         if (bitmap != null) {
@@ -189,5 +194,20 @@ public class Screenshot extends CordovaPlugin {
         }
         callbackContext.error("action not found");
         return false;
+    }
+    
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (ContextCompat.checkSelfPermission(cordova.getActivity().getApplicationContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                ActivityCompat.requestPermissions(super.cordova.getActivity(), new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            return true;
+        }
     }
 }
